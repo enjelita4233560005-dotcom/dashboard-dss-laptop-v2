@@ -1,0 +1,69 @@
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+st.set_page_config(
+    page_title="DSS Laptop SAW",
+    layout="wide"
+)
+
+# Load dataset
+df = pd.read_csv("hasil_ranking_laptop.csv")
+
+st.sidebar.title("DSS Laptop")
+
+menu = st.sidebar.radio(
+    "Menu",
+    [
+        "Dashboard",
+        "Dataset",
+        "Kriteria",
+        "Ranking",
+        "Visualisasi"
+    ]
+)
+
+if menu == "Dashboard":
+    st.title("💻 DSS Pemilihan Laptop")
+    st.markdown("""
+    ### Metode SAW (Simple Additive Weighting)
+
+    Sistem ini membantu memilih laptop terbaik berdasarkan:
+
+    - Harga
+    - RAM
+    - CPU Score
+    - Battery Life
+    - Berat
+    """)
+    col1,col2,col3 = st.columns(3)
+    col1.metric("Jumlah Laptop", len(df))
+    col2.metric("RAM Maksimum", f"{df['RAM'].max()} GB")
+    col3.metric("Harga Termurah", f"Rp {df['Harga'].min():,.0f}")
+
+elif menu == "Dataset":
+    st.title("📊 Dataset Laptop")
+    st.dataframe(df)
+
+elif menu == "Kriteria":
+    st.title("📋 Kriteria DSS")
+    st.table(pd.DataFrame({
+        "Kriteria":["Harga","RAM","CPU_Score","Battery_Hour","Berat"],
+        "Jenis":["Cost","Benefit","Benefit","Benefit","Cost"],
+        "Bobot":[0.30,0.20,0.25,0.15,0.10]
+    }))
+
+elif menu == "Ranking":
+    st.title("🏆 Ranking Laptop")
+    st.dataframe(df.head(20))
+    best = df.iloc[0]
+    st.success(f"Laptop terbaik adalah {best['Laptop']} dengan skor {best['Skor_SAW']:.4f}")
+
+elif menu == "Visualisasi":
+    st.title("📈 Visualisasi DSS")
+    fig1 = px.bar(df.head(10), x="Laptop", y="Skor_SAW", title="Top 10 Laptop")
+    st.plotly_chart(fig1, use_container_width=True)
+    fig2 = px.histogram(df, x="Harga", title="Distribusi Harga")
+    st.plotly_chart(fig2, use_container_width=True)
+    fig3 = px.pie(df, names="RAM", title="Distribusi RAM")
+    st.plotly_chart(fig3, use_container_width=True)
